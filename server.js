@@ -1,6 +1,8 @@
 import express from "express"
 import cors from "cors"
 import pg from "pg"
+import bcrypt from 'bcrypt';
+import uuid from 'uuid';
 
 const app = express()
 app.use(cors())
@@ -16,8 +18,23 @@ const connection = new Pool({
     database: 'mywallet'
 })
 
-app.post('/login', (req,res) => {
-    res.sendStatus(201)
+app.post('/login', async (req,res) => {
+    const {email, password}
+    const user = await connection.query('SELECT * FROM users WHERE email = $1', [email])
+
+    try {
+        if(user.rows[0] && bcrypt.compareSync(password, user.rows[0].password)) {
+            const token = uuid.v4();
+
+            await connection.query(`INSERT INTO sessionUser (token, userId) 
+                                    VALUES ($1, $2)`, [token, user.rows[0].id])
+        
+            return res.send(token)
+        }
+    }   
+    catch {
+        res.sendStatus(500)
+    }
 })
 
 app.post('/signup', (req,res) => {
