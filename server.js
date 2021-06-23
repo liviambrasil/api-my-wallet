@@ -2,7 +2,7 @@ import express from "express"
 import cors from "cors"
 import pg from "pg"
 import bcrypt from 'bcrypt';
-import uuid from 'uuid';
+import * as uuid from 'uuid';
 
 const app = express()
 app.use(cors())
@@ -19,7 +19,7 @@ const connection = new Pool({
 })
 
 app.post('/login', async (req,res) => {
-    const {email, password}
+    const {email, password} = req.body
     const user = await connection.query('SELECT * FROM users WHERE email = $1', [email])
 
     try {
@@ -27,7 +27,8 @@ app.post('/login', async (req,res) => {
             const token = uuid.v4();
 
             await connection.query(`INSERT INTO sessionUser (token, userId) 
-                                    VALUES ($1, $2)`, [token, user.rows[0].id])
+                                    VALUES ($1, $2)`, 
+                                    [token, user.rows[0].id])
         
             return res.send(token)
         }
@@ -37,9 +38,26 @@ app.post('/login', async (req,res) => {
     }
 })
 
-app.post('/signup', (req,res) => {
+app.post('/signup', async (req,res) => {
     const {name, email, password} = req.body
-    res.sendStatus(201)
+    const passwordHash = bcrypt.hashSync(password, 10)
+
+    try {
+        const userExists = await connection.query('SELECT * FROM users WHERE email = $1', [email])
+        if(!userExists.rows[0]){
+            await connection.query(`INSERT INTO users (name, email, password) 
+                                    VALUES ($1, $2, $3)`, 
+                                    [name, email, `${passwordHash}`])
+            return res.sendStatus(201)
+        }
+        else{
+            res.sendStatus(409)
+        }
+    }
+    catch (e){
+        console.log(e)
+        return res.sendStatus(404)
+    }
 })
 
 app.get('/home', (req,res) => {
