@@ -1,9 +1,9 @@
 import express from "express"
 import cors from "cors"
-import pg from "pg"
-import bcrypt from 'bcrypt';
-import * as uuid from 'uuid';
-import connection from "./database.js";
+import bcrypt from 'bcrypt'
+import * as uuid from 'uuid'
+import connection from "./database.js"
+import joi from "joi"
 
 const app = express()
 app.use(cors())
@@ -13,9 +13,15 @@ app.use(express.json())
 app.post('/login', async (req,res) => {
     const {email, password} = req.body
 
-    try {
-        if(!email || !password) return res.sendStatus(400) //funcionando
+    const schema = joi.object({
+        email: joi.string().email().required(),
+        password: joi.string().required(),
+    })
 
+    const isValid = schema.validate(req.body)
+    if(isValid.error) return res.sendStatus(404)
+
+    try {
         const user = await connection.query('SELECT * FROM users WHERE email = $1', [email])
 
         if(user.rows[0] && bcrypt.compareSync(password, user.rows[0].password)) {
@@ -43,8 +49,16 @@ app.post('/signup', async (req,res) => {
     const {name, email, password} = req.body
     const passwordHash = bcrypt.hashSync(password, 10)
 
+    const schema = joi.object({
+        name: joi.string().required(),
+        email: joi.string().email().required(),
+        password: joi.string().required(),
+    })
+
+    const isValid = schema.validate(req.body)
+    if(isValid.error) return res.sendStatus(404)
+
     try {
-        if(!name || !email || !password) return res.sendStatus(400) //funcionando
         const userExists = await connection.query('SELECT * FROM users WHERE email = $1', [email])
         if(!userExists.rows[0]){
             await connection.query(`INSERT INTO users (name, email, password) 
@@ -58,7 +72,7 @@ app.post('/signup', async (req,res) => {
     }
     catch (e){
         console.log(e)
-        return res.sendStatus(404)
+        return res.sendStatus(500)
     }
 })
 
@@ -75,6 +89,7 @@ app.get('/registries', async (req,res) => {
         if(!validateUser.rows[0]) return res.sendStatus(401) //funcionando
 
         const registries = await connection.query(`SELECT * FROM records WHERE userId = $1`, [user.userid])
+
         return res.send(registries.rows) //funcionando
     }
 
@@ -89,6 +104,15 @@ app.post('/registries', async (req,res) => {
     const {value, description, type} = req.body
     const authorization = req.headers['authorization'];
     const token = authorization?.replace('Bearer ', '');
+
+    const schema = joi.object({
+        value: joi.number().required(),
+        description: joi.string().required(),
+        type: joi.string().valid("entry", "exit").required()
+    })
+
+    const isValid = schema.validate(req.body)
+    if(isValid.error) return res.sendStatus(404)
 
     if(!token) return res.sendStatus(401) //funcionando
 
