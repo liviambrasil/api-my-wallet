@@ -34,9 +34,10 @@ app.post('/login', async (req,res) => {
                                     VALUES ($1, $2)`, 
                                     [userId, token])
         
-            return res.send({username, token}) //funcionando
+            return res.send({username, token})
         }
-            return res.sendStatus(401) //funcionando
+        
+        return res.sendStatus(401)
  
     }   
     catch (e) {
@@ -64,13 +65,11 @@ app.post('/signup', async (req,res) => {
             await connection.query(`INSERT INTO users (name, email, password) 
                                     VALUES ($1, $2, $3)`, 
                                     [name, email, `${passwordHash}`])
-            return res.sendStatus(201) //funcionando
+            return res.sendStatus(201)
         }
-        else{
-            res.sendStatus(409) //funcionando
-        }
+        else return res.sendStatus(409)
     }
-    catch (e){
+    catch(e){
         console.log(e)
         return res.sendStatus(500)
     }
@@ -86,11 +85,11 @@ app.get('/registries', async (req,res) => {
                                                     WHERE token = $1`, [token])
                       
         const user = validateUser.rows[0]
-        if(!validateUser.rows[0]) return res.sendStatus(401) //funcionando
+        if(!validateUser.rows[0]) return res.sendStatus(401)
 
         const registries = await connection.query(`SELECT * FROM records WHERE userId = $1`, [user.userid])
 
-        return res.send(registries.rows) //funcionando
+        return res.send(registries.rows)
     }
 
     catch (e) {
@@ -108,14 +107,13 @@ app.post('/registries', async (req,res) => {
     const schema = joi.object({
         value: joi.number().required(),
         description: joi.string().required(),
-        type: joi.string().valid("entry", "exit").required()
+        type: joi.string().valid("/entry", "/exit").required()
     })
 
     const isValid = schema.validate(req.body)
     if(isValid.error) return res.sendStatus(404)
 
-    if(!token) return res.sendStatus(401) //funcionando
-
+    if(!token) return res.sendStatus(401)
     try {
         const result = await connection.query(` SELECT * FROM sessionUsers
                                                 WHERE token = $1`, [token])
@@ -124,10 +122,10 @@ app.post('/registries', async (req,res) => {
             const user = result.rows[0]
             await connection.query(`INSERT INTO records (value, description, type, userId, date)
                                     VALUES ($1, $2, $3, $4, $5)`,[value, description, type, user.userid,(new Date())])
-            res.sendStatus(201) //funcionando
+            res.sendStatus(201)
         }
         else {
-            res.sendStatus(401) //funcionando
+            res.sendStatus(401)
         }
     }
     catch (e) {
@@ -140,12 +138,12 @@ app.post('/signout', async(req,res) => {
     const authorization = req.headers['authorization'];
     const token = authorization.replace('Bearer ', '');
 
-    if(!token) return res.sendStatus(401) //funcionando
+    if(!token) return res.sendStatus(401)
 
     try {
         await connection.query(`DELETE FROM sessionUsers 
                                 WHERE token = $1`, [token])
-        return res.sendStatus(204) //funcionando
+        return res.sendStatus(204) 
     }
     catch (e) {
         console.log(e)
@@ -153,8 +151,5 @@ app.post('/signout', async(req,res) => {
     }
 })
 
-app.get('/teste', (req,res) => {
-    res.sendStatus(200)
-})
 
 export default app;
