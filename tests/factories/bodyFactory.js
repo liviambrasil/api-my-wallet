@@ -1,8 +1,10 @@
+import faker from "faker";
+
 export function generateSignUpBody () {
     return {
-        name: 'Test',
-        email: 'test@test.br',
-        password: '1234'
+        name: faker.name.findName(),
+        email: faker.internet.email(),
+        password: "123456",
     }
 }
 

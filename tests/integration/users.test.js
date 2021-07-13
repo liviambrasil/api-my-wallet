@@ -2,9 +2,10 @@ import "../../src/setup.js"
 import app from '../../src/app'
 import connection from "../../src/database.js"
 import { clearDatabase, endConnection } from "../utils/database.js"
-import { generateLoginBody, generateSignUpBody } from "../utils/login.js"
+import { generateLoginBody, generateSignUpBody } from "../factories/bodyFactory"
 import supertest from 'supertest'
 import bcrypt from 'bcrypt'
+import { createUser } from "../factories/userFactory.js"
 
 
 beforeEach (async() => {
@@ -19,11 +20,7 @@ describe("POST /login", () => {
 
     const user = generateSignUpBody()
 
-    beforeEach(async() => {
-        await connection.query(`INSERT INTO users (name, email, password) 
-                                VALUES ($1, $2, $3)`,
-                                [user.name, user.email, bcrypt.hashSync(user.password, 10)])
-    })
+    beforeEach(async() => await createUser(user))
     
     it('returns 201 for valid params', async() => {
         const body = generateLoginBody(user);
@@ -92,7 +89,7 @@ describe("POST /login", () => {
     })
 })
 
-describe("POST /sigup", () => {
+describe("POST /signup", () => {
 
     it('returns 201 for valid params', async() => {
         const body = generateSignUpBody()
