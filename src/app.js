@@ -34,7 +34,7 @@ app.post('/login', async (req,res) => {
     })
 
     const isValid = schema.validate(req.body)
-    if(isValid.error) return res.sendStatus(404)
+    if(isValid.error) return res.sendStatus(400)
 
     try {
         const user = await connection.query('SELECT * FROM users WHERE email = $1', [email])
@@ -63,7 +63,6 @@ app.post('/login', async (req,res) => {
 
 app.post('/signup', async (req,res) => {
     const {name, email, password} = req.body
-    const passwordHash = bcrypt.hashSync(password, 10)
 
     const schema = joi.object({
         name: joi.string().required(),
@@ -73,6 +72,8 @@ app.post('/signup', async (req,res) => {
 
     const isValid = schema.validate(req.body)
     if(isValid.error) return res.sendStatus(400)
+
+    const passwordHash = bcrypt.hashSync(password, 10)
 
     try {
         const userExists = await connection.query('SELECT * FROM users WHERE email = $1', [email])
@@ -95,7 +96,8 @@ app.get('/registries', async (req,res) => {
     try {
         const user = validateToken(req,res)
 
-        const registries = await connection.query(`SELECT * FROM records WHERE userId = $1`, [user.userid])
+        const registries = await connection.query(`SELECT * FROM records 
+                                                   WHERE userId = $1`, [user.userid])
 
         return res.send(registries.rows)
     }
@@ -122,7 +124,8 @@ app.post('/registries', async (req,res) => {
     try {
         const user = validateToken(req,res)
         await connection.query(`INSERT INTO records (value, description, type, userId, date)
-                                VALUES ($1, $2, $3, $4, $5)`,[value, description, type, user.userid,(new Date())])
+                                VALUES ($1, $2, $3, $4, $5)`,
+                                [value, description, type, user.userid,(new Date())])
         res.sendStatus(201)
     }
     catch (e) {
