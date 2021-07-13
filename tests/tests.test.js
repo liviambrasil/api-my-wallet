@@ -1,3 +1,4 @@
+import "../src/setup.js"
 import { afterAll, beforeEach } from '@jest/globals'
 import supertest from 'supertest'
 import app from '../src/app'
