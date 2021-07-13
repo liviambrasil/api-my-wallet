@@ -42,6 +42,13 @@ describe("POST /login", () => {
         expect(afterInsert.rows.length).toEqual(1);
     })
 
+    it('returns the user token', async() => {
+        const body = generateLoginBody(user);
+
+        const result = await agent.post("/login").send(body);
+        expect(Object.keys(result.body).length).toEqual(2);
+    })
+
     it('returns 400 for invalid (not in a email format) email', async() => {
         const body = generateLoginBody(user);
         body.email = 'test';
@@ -174,4 +181,4 @@ describe("POST /signup", () => {
         const result = await agent.post("/signup").send(body);
         expect(result.status).toEqual(400)
     })
-});
+})
