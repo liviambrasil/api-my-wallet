@@ -9,6 +9,21 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
+async function validateToken (req, res) {
+    const authorization = req.headers['authorization']
+    const token = authorization?.replace('Bearer ', '')
+
+    if(!token) return res.sendStatus(401)
+
+    const validateUser = await connection.query(`SELECT * 
+                                                FROM sessionUsers
+                                                WHERE token = $1`, [token])
+                    
+    const user = validateUser.rows[0]
+
+    if(!validateUser.rows[0]) return res.send("Erro na autenticação").status(401)
+    return user
+}
 
 app.post('/login', async (req,res) => {
     const {email, password} = req.body
@@ -57,7 +72,7 @@ app.post('/signup', async (req,res) => {
     })
 
     const isValid = schema.validate(req.body)
-    if(isValid.error) return res.sendStatus(404)
+    if(isValid.error) return res.sendStatus(400)
 
     try {
         const userExists = await connection.query('SELECT * FROM users WHERE email = $1', [email])
@@ -76,16 +91,9 @@ app.post('/signup', async (req,res) => {
 })
 
 app.get('/registries', async (req,res) => {
-    const authorization = req.headers['authorization']
-    const token = authorization?.replace('Bearer ', '')
-
-    try{
-        const validateUser = await connection.query(`SELECT * 
-                                                    FROM sessionUsers
-                                                    WHERE token = $1`, [token])
-                      
-        const user = validateUser.rows[0]
-        if(!validateUser.rows[0]) return res.sendStatus(401)
+    
+    try {
+        const user = validateToken(req,res)
 
         const registries = await connection.query(`SELECT * FROM records WHERE userId = $1`, [user.userid])
 
@@ -101,8 +109,6 @@ app.get('/registries', async (req,res) => {
 app.post('/registries', async (req,res) => { 
 
     const {value, description, type} = req.body
-    const authorization = req.headers['authorization'];
-    const token = authorization?.replace('Bearer ', '');
 
     const schema = joi.object({
         value: joi.number().required(),
@@ -111,22 +117,13 @@ app.post('/registries', async (req,res) => {
     })
 
     const isValid = schema.validate(req.body)
-    if(isValid.error) return res.sendStatus(404)
+    if(isValid.error) return res.sendStatus(400)
 
-    if(!token) return res.sendStatus(401)
     try {
-        const result = await connection.query(` SELECT * FROM sessionUsers
-                                                WHERE token = $1`, [token])
-
-        if(result.rows[0]) {
-            const user = result.rows[0]
-            await connection.query(`INSERT INTO records (value, description, type, userId, date)
-                                    VALUES ($1, $2, $3, $4, $5)`,[value, description, type, user.userid,(new Date())])
-            res.sendStatus(201)
-        }
-        else {
-            res.sendStatus(401)
-        }
+        const user = validateToken(req,res)
+        await connection.query(`INSERT INTO records (value, description, type, userId, date)
+                                VALUES ($1, $2, $3, $4, $5)`,[value, description, type, user.userid,(new Date())])
+        res.sendStatus(201)
     }
     catch (e) {
         console.log(e)
