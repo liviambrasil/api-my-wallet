@@ -52,10 +52,15 @@ describe('GET /registries', () => {
         expect(result.body.length).toEqual(1);
     }) 
 
-    // it('returns 401 for authentication failed (wrong token)', async() => {
+    it('returns 401 for authentication failed (wrong token)', async() => {
+        const result = await agent.get("/registries")
+                                  .set('Authorization', `Bearer wrongtoken`);
+        expect(result.status).toEqual(401);
+    })
 
-    // })
-    // it('returns 401 for authentication failed (empty token)', async() => {
-
-    // })
+    it('returns 401 for authentication failed (empty token)', async() => {
+        const result = await agent.get("/registries")
+                                  .set('Authorization', `Bearer `);
+        expect(result.status).toEqual(401);
+    })
 })

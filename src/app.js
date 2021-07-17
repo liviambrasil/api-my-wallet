@@ -79,16 +79,18 @@ app.get('/registries', async (req,res) => {
     const authorization = req.headers['authorization']
     const token = authorization?.replace('Bearer ', '')
 
+    console.log(token)
+
     if(!token) return res.sendStatus(401)
 
     try {
         const validateUser = await connection.query(`SELECT * 
                                                 FROM sessionUsers
                                                 WHERE token = $1`, [token])
-                    
-        const user = validateUser.rows[0]
-        if(!validateUser.rows[0]) return res.send("Erro na autenticação").status(401)
+        if(!validateUser.rows.length) return res.sendStatus(401)  
 
+        const user = validateUser.rows[0]
+        
         const registries = await connection.query(`SELECT * FROM records 
                                                    WHERE userId = $1`, [user.userid])
 
