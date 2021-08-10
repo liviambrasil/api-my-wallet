@@ -29,10 +29,10 @@ The following tools and frameworks were used in the construction of the project:
 
 1. Clone this repository
 ```bash
-git clone https://github.com/Celusgo/my-wallet-backend
+git clone https://github.com/liviambrasil/my-wallet-back-end
 ```
 2. Clone the front-end repository at https://github.com/liviambrasil/my-wallet-front-end
-3. Follow instructions to run front-end at https://github.com/liviambrasil/my-wallet-front-end
+3. Follow instructions to run front-end at https://github.com/liviambrasil/my-back-front-end
 4. Create a Database using the ``dump.sql`` file inside the ``database`` folder by following these steps:
 
     - 4.1 Open your terminal. **Important: the terminal must be opened in the same path as the ``dump.sql`` file is located.**
@@ -55,8 +55,8 @@ npm i
 ```bash
 npm start
 ```
-4. You can optionally test the project running
+7. Your server should be running now.
+8. You can optionally test the project running
 ```bash
 npm run test
 ```
-7. Your server should be running now.
