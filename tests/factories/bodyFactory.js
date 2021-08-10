@@ -14,3 +14,11 @@ export function generateLoginBody (user) {
         password: user?.password || "1234"
     }
 }
+
+export function generateRegisterBody () {
+    return {
+        value: 500,
+        description: 'test',
+        type: '/entry',
+    }
+}

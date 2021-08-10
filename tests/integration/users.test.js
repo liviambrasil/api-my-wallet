@@ -25,20 +25,19 @@ describe("POST /login", () => {
     beforeEach(async() => await createUser(user))
     
     it('returns 201 for valid params', async() => {
-        const body = generateLoginBody(user);
-
+        
+        const body = await generateLoginBody(user);
         const response = await agent.post("/login").send(body);
+        
         expect(response.status).toEqual(200);
     })
 
     it('inserts a new session in the database', async() => {
         const body = generateLoginBody(user);
 
-        const beforeInsert = await connection.query('SELECT * FROM sessionUsers');
         await agent.post("/login").send(body);
         const afterInsert = await connection.query('SELECT * FROM sessionUsers')
 
-        expect(beforeInsert.rows.length).toEqual(0);
         expect(afterInsert.rows.length).toEqual(1);
     })
 
@@ -98,10 +97,9 @@ describe("POST /login", () => {
     })
 
     it('returns 401 for wrong password', async() => {
-        const body = generateLoginBody(user);
-        body.password = bcrypt.hashSync(user.password, 10);
+        const body1 = {email:"test@test.br", password: "wrongpassword"}
 
-        const response = await agent.post("/login").send(body);
+        const response = await agent.post("/login").send(body1);
         expect(response.status).toEqual(401);
     })
 })
