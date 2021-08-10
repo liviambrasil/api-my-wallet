@@ -2,7 +2,7 @@
 
 An easy to use financial manager. Track your revenues and expenses to learn how you spend your money and know all the time how much you have.
 
-Try it out now at https://link-to-my-project-deployed.herokuapp.com
+Try it out now at https://api-my-wallet-lb.herokuapp.com/
 
 ## About
 
