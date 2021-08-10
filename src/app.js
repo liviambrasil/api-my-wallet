@@ -9,7 +9,6 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-
 app.post('/login', async (req,res) => {
     const {email, password} = req.body
 
@@ -19,7 +18,7 @@ app.post('/login', async (req,res) => {
     })
 
     const isValid = schema.validate(req.body)
-    if(isValid.error) return res.sendStatus(404)
+    if(isValid.error) return res.sendStatus(400)
 
     try {
         const user = await connection.query('SELECT * FROM users WHERE email = $1', [email])
@@ -41,14 +40,12 @@ app.post('/login', async (req,res) => {
  
     }   
     catch (e) {
-        console.log(e)
         return res.sendStatus(500)
     }
 })
 
 app.post('/signup', async (req,res) => {
     const {name, email, password} = req.body
-    const passwordHash = bcrypt.hashSync(password, 10)
 
     const schema = joi.object({
         name: joi.string().required(),
@@ -57,7 +54,9 @@ app.post('/signup', async (req,res) => {
     })
 
     const isValid = schema.validate(req.body)
-    if(isValid.error) return res.sendStatus(404)
+    if(isValid.error) return res.sendStatus(400)
+
+    const passwordHash = bcrypt.hashSync(password, 10)
 
     try {
         const userExists = await connection.query('SELECT * FROM users WHERE email = $1', [email])
@@ -70,7 +69,6 @@ app.post('/signup', async (req,res) => {
         else return res.sendStatus(409)
     }
     catch(e){
-        console.log(e)
         return res.sendStatus(500)
     }
 })
@@ -79,30 +77,33 @@ app.get('/registries', async (req,res) => {
     const authorization = req.headers['authorization']
     const token = authorization?.replace('Bearer ', '')
 
-    try{
-        const validateUser = await connection.query(`SELECT * 
-                                                    FROM sessionUsers
-                                                    WHERE token = $1`, [token])
-                      
-        const user = validateUser.rows[0]
-        if(!validateUser.rows[0]) return res.sendStatus(401)
+    if(!token) return res.sendStatus(401)
 
-        const registries = await connection.query(`SELECT * FROM records WHERE userId = $1`, [user.userid])
+    try {
+        const validateUser = await connection.query(`SELECT * 
+                                                FROM sessionUsers
+                                                WHERE token = $1`, [token])
+        if(!validateUser.rows.length) return res.sendStatus(401)  
+
+        const user = validateUser.rows[0]
+        
+        const registries = await connection.query(`SELECT * FROM records 
+                                                   WHERE userId = $1`, [user.userid])
 
         return res.send(registries.rows)
     }
 
     catch (e) {
-        console.log(e)
         return res.sendStatus(500)
     }
 })
 
 app.post('/registries', async (req,res) => { 
-
+    const authorization = req.headers['authorization']
+    const token = authorization?.replace('Bearer ', '')
     const {value, description, type} = req.body
-    const authorization = req.headers['authorization'];
-    const token = authorization?.replace('Bearer ', '');
+
+    if(!token) return res.sendStatus(401)
 
     const schema = joi.object({
         value: joi.number().required(),
@@ -111,25 +112,22 @@ app.post('/registries', async (req,res) => {
     })
 
     const isValid = schema.validate(req.body)
-    if(isValid.error) return res.sendStatus(404)
+    if(isValid.error) return res.sendStatus(400)
 
-    if(!token) return res.sendStatus(401)
     try {
-        const result = await connection.query(` SELECT * FROM sessionUsers
+        const validateUser = await connection.query(`SELECT * 
+                                                FROM sessionUsers
                                                 WHERE token = $1`, [token])
-
-        if(result.rows[0]) {
-            const user = result.rows[0]
-            await connection.query(`INSERT INTO records (value, description, type, userId, date)
-                                    VALUES ($1, $2, $3, $4, $5)`,[value, description, type, user.userid,(new Date())])
-            res.sendStatus(201)
-        }
-        else {
-            res.sendStatus(401)
-        }
+                    
+        const user = validateUser.rows[0]
+        if(!validateUser.rows[0]) return res.send("Erro na autenticação").status(401)
+        
+        await connection.query(`INSERT INTO records (value, description, type, userId, date)
+                                VALUES ($1, $2, $3, $4, $5)`,
+                                [value, description, type, user.userid,(new Date())])
+        res.sendStatus(201)
     }
     catch (e) {
-        console.log(e)
         res.sendStatus(500)
     }
 })
@@ -146,7 +144,6 @@ app.post('/signout', async(req,res) => {
         return res.sendStatus(204) 
     }
     catch (e) {
-        console.log(e)
         return res.sendStatus(500)
     }
 })
