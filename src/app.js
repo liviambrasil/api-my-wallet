@@ -40,7 +40,6 @@ app.post('/login', async (req,res) => {
  
     }   
     catch (e) {
-        console.log(e)
         return res.sendStatus(500)
     }
 })
@@ -70,7 +69,6 @@ app.post('/signup', async (req,res) => {
         else return res.sendStatus(409)
     }
     catch(e){
-        console.log(e)
         return res.sendStatus(500)
     }
 })
@@ -78,8 +76,6 @@ app.post('/signup', async (req,res) => {
 app.get('/registries', async (req,res) => {
     const authorization = req.headers['authorization']
     const token = authorization?.replace('Bearer ', '')
-
-    console.log(token)
 
     if(!token) return res.sendStatus(401)
 
@@ -98,7 +94,6 @@ app.get('/registries', async (req,res) => {
     }
 
     catch (e) {
-        console.log(e)
         return res.sendStatus(500)
     }
 })
@@ -133,7 +128,6 @@ app.post('/registries', async (req,res) => {
         res.sendStatus(201)
     }
     catch (e) {
-        console.log(e)
         res.sendStatus(500)
     }
 })
@@ -150,7 +144,6 @@ app.post('/signout', async(req,res) => {
         return res.sendStatus(204) 
     }
     catch (e) {
-        console.log(e)
         return res.sendStatus(500)
     }
 })

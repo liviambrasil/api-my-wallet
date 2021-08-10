@@ -111,13 +111,11 @@ describe("POST /signup", () => {
     const body = generateSignUpBody()
 
     it('returns 201 for valid params', async() => {
-        
         const result = await agent.post("/signup").send(body);
         expect(result.status).toEqual(201)
     });
 
     it('inserts a new user in the database', async() => {
-
         const beforeInsert = await connection.query('SELECT * FROM users');
         await agent.post("/signup").send(body);
         const afterInsert = await connection.query('SELECT * FROM users')
@@ -127,7 +125,6 @@ describe("POST /signup", () => {
     })
 
     it('returns 409 for duplicate email', async() => {
-
         await agent.post("/signup").send(body);
         const secondTry = await agent.post("/signup").send(body);
         expect(secondTry.status).toEqual(409)

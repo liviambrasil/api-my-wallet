@@ -28,7 +28,6 @@ describe('GET /registries', () => {
         await agent.post("/login").send(body);
     })
 
-
     it('returns 200 for valid params', async() => {
         const getSessionUser = await connection.query('SELECT * FROM sessionUsers')
         const token = getSessionUser.rows[0].token
