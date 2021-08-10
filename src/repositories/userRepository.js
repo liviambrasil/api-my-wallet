@@ -1,4 +1,4 @@
-import connection from "../database"
+import connection from "../database.js"
 
 async function checkUserToken (token) {
     const validateUser = await connection.query(`SELECT * 

@@ -1,4 +1,4 @@
-import connection from "../database"
+import connection from "../database.js"
 
 async function insertRegister ({value, description, type, user}) {
     return await connection.query(`INSERT INTO records (value, description, type, userId, date)
