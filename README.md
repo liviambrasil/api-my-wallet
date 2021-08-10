@@ -51,9 +51,6 @@ git clone https://github.com/Celusgo/my-wallet-backend
 ```bash
 npm i
 ```
-```bash
-npm i -d
-```
 6. Also in the root folder, run the back-end with
 ```bash
 npm start
