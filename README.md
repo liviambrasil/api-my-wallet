@@ -43,7 +43,7 @@ git clone https://github.com/liviambrasil/my-wallet-back-end
 5. Set the environment variables by following these steps:
     - 5.1 Create a ``.env`` file in the folder root
     - 5.2 Copy the content of the ``.env.example`` into it
-    - 5.3 Set the ``DATABASE_URL`` in this format: "postgres://usuario:senha@host:porta/mywallet"
+    - 5.3 Set the ``DATABASE_URL`` in this format: "postgres://user:password@host:port/mywallet"
     - 5.4 Set the ``PORT`` for 4000
 6. In your terminal, go back to the root folder and install the dependencies
 ```bash
