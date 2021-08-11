@@ -61,7 +61,7 @@ npm start
     - 9.4 Create a test database by typing ``CREATE DATABASE mywallet_test TEMPLATE mywallet;`` and hitting enter. Your database test should be ready after this step.
     - 9.5 Set the enviroment variable following the step 5 again, with the following changes:
       - 9.5.1 The file must be called ``.env.test``
-      - 9.5.2 The ``DATABASE_URL`` must be in this format: "postgres://usuario:senha@host:porta/mywallet_test"
+      - 9.5.2 The ``DATABASE_URL`` must be in this format: "postgres://user:password@host:port/mywallet_test"
 
 10. In your terminal, go to the root folder and run the tests with:
 ```bash
