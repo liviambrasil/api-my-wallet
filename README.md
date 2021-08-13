@@ -29,7 +29,7 @@ The following tools and frameworks were used in the construction of the project:
 
 1. Clone this repository
 ```bash
-git clone https://github.com/liviambrasil/my-wallet-back-end
+git clone https://github.com/liviambrasil/api-my-wallet
 ```
 2. Clone the front-end repository at https://github.com/liviambrasil/my-wallet-front-end
 3. Follow instructions to run front-end at https://github.com/liviambrasil/my-back-front-end
